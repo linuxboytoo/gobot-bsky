@@ -1,4 +1,4 @@
-module github.com/danrusei/gobot-bsky
+module github.com/linuxboytoo/gobot-bsky
 
 go 1.21.6
 
