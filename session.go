@@ -29,14 +29,14 @@ func (c *BskyAgent) Authenticate(ctx context.Context) error {
 	}
 
 	// Return if access token hasn't expired.
-	aExp := c.tokenExpiration(c.client.Auth.AccessJwt)
+	aExp := TokenExpiration(c.client.Auth.AccessJwt)
 	if aExp.After(time.Now()) {
 		c.logger.Debug("Access token still valid.")
 		return nil
 	}
 
 	// Refresh if refresh token has not expired, since access token is expired.
-	rExp := c.tokenExpiration(c.client.Auth.RefreshJwt)
+	rExp := TokenExpiration(c.client.Auth.RefreshJwt)
 	if rExp.After(time.Now()) {
 		c.logger.Debug("Access token expired. Refreshing.")
 		err := c.refreshSession(ctx)
@@ -85,7 +85,7 @@ func (c *BskyAgent) updateClientAuth(accessJwt, refreshJwt, handle, did string) 
 	}
 }
 
-func (c *BskyAgent) tokenExpiration(token string) *jwt.NumericDate {
+func TokenExpiration(token string) *jwt.NumericDate {
 	t, _, err := jwt.NewParser().ParseUnverified(token, jwt.MapClaims{})
 	if err != nil && !errors.Is(err, jwt.ErrTokenUnverifiable) {
 		return &jwt.NumericDate{}
