@@ -17,10 +17,24 @@ func (c *BskyAgent) Connect(ctx context.Context) error {
 
 // Authenticate to the Personal Data Server setup in NewAgent
 func (c *BskyAgent) Authenticate(ctx context.Context) error {
+	logger := c.logger
+	defer func() {
+		logger.Info("Authentication Result",
+			"accessTokenExpiration", TokenExpiration(c.client.Auth.AccessJwt),
+			"refreshTokenExpiration", TokenExpiration(c.client.Auth.RefreshJwt),
+		)
+	}()
+
+	if c.client.Auth != nil {
+		logger = logger.With(
+			"preAuthAccessTokenExpiration", TokenExpiration(c.client.Auth.AccessJwt),
+			"preAuthRefreshTokenExpiration", TokenExpiration(c.client.Auth.RefreshJwt),
+		)
+	}
 
 	// If no auth, create a new session
 	if c.client.Auth == nil {
-		c.logger.Debug("No auth. Creating new session.")
+		logger.Info("No auth. Creating new session.")
 		err := c.createSession(ctx)
 		if err != nil {
 			return fmt.Errorf("error creating session. %w", err)
@@ -31,14 +45,14 @@ func (c *BskyAgent) Authenticate(ctx context.Context) error {
 	// Return if access token hasn't expired.
 	aExp := TokenExpiration(c.client.Auth.AccessJwt)
 	if aExp.After(time.Now()) {
-		c.logger.Debug("Access token still valid.")
+		logger.Info("Access token still valid.")
 		return nil
 	}
 
 	// Refresh if refresh token has not expired, since access token is expired.
 	rExp := TokenExpiration(c.client.Auth.RefreshJwt)
 	if rExp.After(time.Now()) {
-		c.logger.Debug("Access token expired. Refreshing.")
+		logger.Info("Access token expired. Refreshing.")
 		err := c.refreshSession(ctx)
 		if err != nil {
 			return fmt.Errorf("error refreshing session. %w", err)
@@ -50,7 +64,7 @@ func (c *BskyAgent) Authenticate(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("error creating session. %w", err)
 	}
-	c.logger.Debug(fmt.Sprintf("All tokens expired. Creating new session. Access Expired: %s, Refresh Expired: %s", aExp, rExp))
+	logger.Info("All tokens expired. Creating new session.")
 	return nil
 }
 

@@ -99,7 +99,6 @@ func generateSignedToken(expiration time.Time, key *ecdsa.PrivateKey) (string, e
 }
 
 func (m *MockPDS) sessionHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Printf("Generating session. Access: %s Refresh: %s\n", m.accessTokenExpire, m.refreshTokenExpire)
 	o, err := generateSession(m.accessTokenExpire, m.refreshTokenExpire, m.signingKey)
 	if err != nil {
 		fmt.Printf("error generating session. %v\n", err)
@@ -107,10 +106,12 @@ func (m *MockPDS) sessionHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	j, err := json.Marshal(o)
 	if err != nil {
+		fmt.Printf("error marshalling. %v\n", err)
 		w.WriteHeader(500)
 	}
 	_, err = w.Write(j)
 	if err != nil {
+		fmt.Printf("error writing output. %v\n", err)
 		w.WriteHeader(500)
 	}
 	m.authCount++

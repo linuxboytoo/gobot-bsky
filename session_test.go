@@ -3,6 +3,8 @@ package gobotbsky
 import (
 	"context"
 	"github.com/stretchr/testify/assert"
+	"log/slog"
+	"os"
 	"testing"
 	"time"
 )
@@ -47,7 +49,7 @@ func TestBskyAgent_Authenticate(t *testing.T) {
 		}
 
 		agent := NewAgent(ctx, pds.URL(), "test", "testkey")
-		agent.logger = &SimpleLogger{}
+		agent.WithLogger(slog.New(slog.NewTextHandler(os.Stdout, nil)))
 
 		assert.Nil(t, agent.client.Auth)
 		if err := agent.Connect(ctx); err != nil {

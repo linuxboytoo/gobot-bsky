@@ -7,8 +7,10 @@ import (
 	"github.com/bluesky-social/indigo/api/atproto"
 	appbsky "github.com/bluesky-social/indigo/api/bsky"
 	lexutil "github.com/bluesky-social/indigo/lex/util"
+	"io"
 	"io/ioutil"
 	"log"
+	"log/slog"
 	"net/http"
 	"time"
 
@@ -27,7 +29,7 @@ type BskyAgent struct {
 	apikey      string
 	lastCreate  time.Time
 	lastRefresh time.Time
-	logger      logger
+	logger      *slog.Logger
 }
 
 // Creates new BlueSky Agent
@@ -44,9 +46,14 @@ func NewAgent(ctx context.Context, server string, handle string, apikey string) 
 		},
 		handle: handle,
 		apikey: apikey,
-		logger: &NoopLogger{},
+		logger: slog.New(slog.NewTextHandler(io.Discard, nil)),
 	}
 
+}
+
+func (c *BskyAgent) WithLogger(l *slog.Logger) *BskyAgent {
+	c.logger = l
+	return c
 }
 
 func (c *BskyAgent) UploadImages(ctx context.Context, images ...Image) ([]lexutil.LexBlob, error) {
