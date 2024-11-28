@@ -57,7 +57,9 @@ func (c *BskyAgent) WithLogger(l *slog.Logger) *BskyAgent {
 }
 
 func (c *BskyAgent) UploadImages(ctx context.Context, images ...Image) ([]lexutil.LexBlob, error) {
-	c.Authenticate(ctx)
+	if err := c.Authenticate(ctx); err != nil {
+		return nil, fmt.Errorf("Error Authenticating. %w", err)
+	}
 
 	for _, img := range images {
 		getImage, err := getImageAsBuffer(img.Uri.String())
@@ -80,8 +82,9 @@ func (c *BskyAgent) UploadImages(ctx context.Context, images ...Image) ([]lexuti
 }
 
 func (c *BskyAgent) UploadImage(ctx context.Context, image Image) (*lexutil.LexBlob, error) {
-	c.Authenticate(ctx)
-
+	if err := c.Authenticate(ctx); err != nil {
+		return nil, fmt.Errorf("Error Authenticating. %w", err)
+	}
 	getImage, err := getImageAsBuffer(image.Uri.String())
 	if err != nil {
 		log.Printf("Couldn't retrive the image: %v , %v", image, err)
@@ -103,7 +106,9 @@ func (c *BskyAgent) UploadImage(ctx context.Context, image Image) (*lexutil.LexB
 
 // Post to social app
 func (c *BskyAgent) PostToFeed(ctx context.Context, post appbsky.FeedPost) (string, string, error) {
-	c.Authenticate(ctx)
+	if err := c.Authenticate(ctx); err != nil {
+		return "", "", fmt.Errorf("Error Authenticating. %w", err)
+	}
 
 	post_input := &atproto.RepoCreateRecord_Input{
 		// collection: The NSID of the record collection.
