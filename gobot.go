@@ -33,13 +33,13 @@ type BskyAgent struct {
 }
 
 // Creates new BlueSky Agent
-func NewAgent(ctx context.Context, server string, handle string, apikey string) BskyAgent {
+func NewAgent(ctx context.Context, server string, handle string, apikey string) *BskyAgent {
 
 	if server == "" {
 		server = defaultPDS
 	}
 
-	return BskyAgent{
+	return &BskyAgent{
 		client: &xrpc.Client{
 			Client: new(http.Client),
 			Host:   server,
